@@ -1,0 +1,34 @@
+services:
+  simple-api:
+    container_name: simple-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DB_URL=jdbc:postgresql://simple-api-db:5432/app
+      - SERVER_PORT=8082
+    ports:
+      - "8082:8082"
+    depends_on:
+      simple-api-db:
+        condition: service_healthy
+
+  simple-api-db:
+    container_name: simple-api-db
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=app
+    volumes:
+      - simple-api-pg-data:/var/lib/postgresql
+    ports:
+      - "5436:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  simple-api-pg-data:
